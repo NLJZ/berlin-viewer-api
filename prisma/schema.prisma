@@ -9,3 +9,56 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum EventType {
+  Screening
+  Exhibition
+}
+
+model Event {
+  id        String    @id @default(cuid())
+  type      EventType
+  title     String
+  year      String?
+  runtime   String?
+  language  String[]
+  subs      String[]
+  series    Series    @relation(fields: [seriesId], references: [id])
+  seriesId  String
+  director  String[]
+  artist    String[]
+  cast      String[]
+  venue     Venue     @relation(fields: [venueId], references: [id])
+  venueId   String
+  listings  Listing[]
+  updatedAt DateTime  @updatedAt
+  createdAt DateTime? @default(now())
+  eventUrl  String?
+}
+
+model Series {
+  id        String  @id @default(cuid())
+  title     String
+  events    Event[]
+  seriesUrl String?
+  description String?
+}
+
+model Listing {
+  id         String    @id @default(cuid())
+  startTime  DateTime
+  endTime    DateTime?
+  event      Event     @relation(fields: [eventId], references: [id])
+  eventId    String
+  listingUrl String?
+}
+
+model Venue {
+  id      String  @id @default(cuid())
+  name    String
+  address String?
+  phone   String?
+  hours   String?
+  url     String?
+  events  Event[]
+}
