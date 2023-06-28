@@ -10,6 +10,26 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id       String     @id @default(cuid())
+  name     String
+  email    String     @unique
+  password String
+  roles    UserRole[]
+  venues   Venue[]
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VENUE
+}
+
+enum user_status {
+  active
+  inactive
+}
+
 enum EventType {
   Screening
   Exhibition
@@ -23,24 +43,24 @@ model Event {
   runtime   String?
   language  String[]
   subs      String[]
-  series    Series    @relation(fields: [seriesId], references: [id])
-  seriesId  String
+  series    Series?   @relation(fields: [seriesId], references: [id])
+  seriesId  String?
   director  String[]
   artist    String[]
   cast      String[]
-  venue     Venue     @relation(fields: [venueId], references: [id])
-  venueId   String
+  venue     Venue?    @relation(fields: [venueId], references: [id])
+  venueId   String?
   listings  Listing[]
-  updatedAt DateTime  @updatedAt
+  updatedAt DateTime? @updatedAt
   createdAt DateTime? @default(now())
   eventUrl  String?
 }
 
 model Series {
-  id        String  @id @default(cuid())
-  title     String
-  events    Event[]
-  seriesUrl String?
+  id          String  @id @default(cuid())
+  title       String
+  events      Event[]
+  seriesUrl   String?
   description String?
 }
 
@@ -61,4 +81,5 @@ model Venue {
   hours   String?
   url     String?
   events  Event[]
+  listers User[]
 }
