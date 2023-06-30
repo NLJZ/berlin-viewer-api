@@ -11,7 +11,7 @@ export const generateAccessToken = (userId: string, roles: string[] = []): Promi
       },
       config.JWT_SECRET,
       {
-        expiresIn: '4h',
+        expiresIn: '8h',
       },
       (err, token) => {
         if (err) return reject(err);
