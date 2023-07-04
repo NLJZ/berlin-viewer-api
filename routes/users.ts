@@ -15,12 +15,16 @@ userRoutes.get('/', async (req: Request, res: Response) => {
   res.json(users);
 });
 
+userRoutes.get('/authenticate', auth, async (req: Request, res: Response) => {
+  res.status(200);
+  res.json({authenticated: true})
+});
+
 userRoutes.post('/login', async (req: Request, res: Response, next) => {
-  console.log(req);
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      res.status(400);
+      res.status(400).json({message: 'error'});
       throw new Error('Email and password required.');
     }
 
@@ -31,20 +35,22 @@ userRoutes.post('/login', async (req: Request, res: Response, next) => {
     });
 
     if (!existingUser) {
-      res.status(403);
+      res.status(400).json({message: 'error'});;
       throw new Error('Invalid credentials.');
+
     };
 
     const validPassword = await compare(password, existingUser.password);
     if (!validPassword) {
-      res.status(403);
+      res.status(403).json({message: 'error'});;
       throw new Error('Invalid credentials.');
     };
 
      const token = await generateAccessToken(existingUser.id, existingUser.roles);
-     res.json({data: token});
+     res.json({token: token});
+
   } catch (err) {
-    return console.log(err);
+    return res.json({message: 'invalid'})
   }
 });
 
