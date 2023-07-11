@@ -25,7 +25,6 @@ userRoutes.post('/login', async (req: Request, res: Response, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      console.log('incomplete');
       res.status(400).json({ message: 'invalid'});;
       throw new Error('Email and password required.');
     }
@@ -37,7 +36,6 @@ userRoutes.post('/login', async (req: Request, res: Response, next) => {
     });
 
     if (!existingUser) {
-      console.log('wrong user');
       res.status(400).json({ message: 'invalid'});;
       throw new Error('Invalid credentials.');
     };
@@ -45,7 +43,6 @@ userRoutes.post('/login', async (req: Request, res: Response, next) => {
     const validPassword = await compare(password, existingUser.password);
 
     if (!validPassword) {
-      console.log('wrong password');
       res.status(403).json({ message: 'invalid'});
       throw new Error('Invalid credentials.');
     };
