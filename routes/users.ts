@@ -17,14 +17,16 @@ userRoutes.get('/', async (req: Request, res: Response) => {
 
 userRoutes.get('/authenticate', auth, async (req: Request, res: Response) => {
   res.status(200);
-  res.json({authenticated: true})
+  res.json({authenticated: true});
 });
 
 userRoutes.post('/login', async (req: Request, res: Response, next) => {
+
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      res.status(400).json({message: 'error'});
+      console.log('incomplete');
+      res.status(400).json({ message: 'invalid'});;
       throw new Error('Email and password required.');
     }
 
@@ -35,18 +37,21 @@ userRoutes.post('/login', async (req: Request, res: Response, next) => {
     });
 
     if (!existingUser) {
-      res.status(400).json({message: 'error'});;
+      console.log('wrong user');
+      res.status(400).json({ message: 'invalid'});;
       throw new Error('Invalid credentials.');
-
     };
 
     const validPassword = await compare(password, existingUser.password);
+
     if (!validPassword) {
-      res.status(403).json({message: 'error'});;
+      console.log('wrong password');
+      res.status(403).json({ message: 'invalid'});
       throw new Error('Invalid credentials.');
     };
 
      const token = await generateAccessToken(existingUser.id, existingUser.roles);
+     console.log(token);
      res.json({token: token});
 
   } catch (err) {
