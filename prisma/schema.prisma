@@ -30,56 +30,56 @@ enum user_status {
   inactive
 }
 
-enum EventType {
+enum ListingType {
   Screening
   Exhibition
 }
 
-model Event {
-  id        String    @id @default(cuid())
-  type      EventType
-  title     String
-  year      String?
-  runtime   String?
-  language  String[]
-  subs      String[]
-  series    Series?   @relation(fields: [seriesId], references: [id])
-  seriesId  String?
-  director  String[]
-  artist    String[]
-  cast      String[]
-  venue     Venue?    @relation(fields: [venueId], references: [id])
-  venueId   String?
-  listings  Listing[]
-  updatedAt DateTime? @updatedAt
-  createdAt DateTime? @default(now())
-  eventUrl  String?
+model Listing {
+  id         String      @id @default(cuid())
+  type       ListingType
+  title      String
+  year       String?
+  runtime    String?
+  language   String[]
+  subs       String[]
+  series     Series?     @relation(fields: [seriesId], references: [id])
+  seriesId   String?
+  director   String[]
+  artist     String[]
+  cast       String[]
+  venue      Venue?      @relation(fields: [venueId], references: [id])
+  venueId    String?
+  showtimes  Showtime[]
+  updatedAt  DateTime?   @updatedAt
+  createdAt  DateTime?   @default(now())
+  listingUrl String?
 }
 
 model Series {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
-  events      Event[]
+  listings    Listing[]
   seriesUrl   String?
   description String?
 }
 
-model Listing {
-  id         String    @id @default(cuid())
-  startTime  DateTime
-  endTime    DateTime?
-  event      Event     @relation(fields: [eventId], references: [id])
-  eventId    String
-  listingUrl String?
+model Showtime {
+  id          String    @id @default(cuid())
+  startTime   DateTime
+  endTime     DateTime?
+  listing     Listing   @relation(fields: [listingId], references: [id])
+  listingId   String
+  showtimeUrl String?
 }
 
 model Venue {
-  id      String  @id @default(cuid())
-  name    String
-  address String?
-  phone   String?
-  hours   String?
-  url     String?
-  events  Event[]
-  listers User[]
+  id       String    @id @default(cuid())
+  name     String
+  address  String?
+  phone    String?
+  hours    String?
+  url      String?
+  listings Listing[]
+  listers  User[]
 }
