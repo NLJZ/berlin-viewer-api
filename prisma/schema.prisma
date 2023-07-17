@@ -17,6 +17,7 @@ model User {
   password String
   roles    UserRole[]
   venues   Venue[]
+  listings Listing[]
 }
 
 enum UserRole {
@@ -25,35 +26,32 @@ enum UserRole {
   VENUE
 }
 
-enum user_status {
-  active
-  inactive
-}
-
 enum ListingType {
   Screening
   Exhibition
 }
 
 model Listing {
-  id         String      @id @default(cuid())
-  type       ListingType
-  title      String
-  year       String?
-  runtime    String?
-  language   String[]
-  subs       String[]
-  series     Series?     @relation(fields: [seriesId], references: [id])
-  seriesId   String?
-  director   String[]
-  artist     String[]
-  cast       String[]
-  venue      Venue?      @relation(fields: [venueId], references: [id])
-  venueId    String?
-  showtimes  Showtime[]
-  updatedAt  DateTime?   @updatedAt
-  createdAt  DateTime?   @default(now())
-  listingUrl String?
+  id          String      @id @default(cuid())
+  type        ListingType
+  title       String
+  year        String?
+  runtime     String?
+  language    String[]
+  subs        String[]
+  series      Series?     @relation(fields: [seriesId], references: [id])
+  seriesId    String?
+  director    String[]
+  artist      String[]
+  cast        String[]
+  venue       Venue?      @relation(fields: [venueId], references: [id])
+  venueId     String?
+  showtimes   Showtime[]
+  listingUrl  String?
+  createdBy   User        @relation(fields: [createdById], references: [id])
+  createdById String
+  updatedAt   DateTime?   @updatedAt
+  createdAt   DateTime?   @default(now())
 }
 
 model Series {
@@ -66,8 +64,10 @@ model Series {
 
 model Showtime {
   id          String    @id @default(cuid())
-  startTime   DateTime
-  endTime     DateTime?
+  date        DateTime  @db.Date
+  endDate     DateTime? @db.Date
+  time        DateTime? @db.Time(4)
+  endTime     DateTime? @db.Time(4)
   listing     Listing   @relation(fields: [listingId], references: [id])
   listingId   String
   showtimeUrl String?
