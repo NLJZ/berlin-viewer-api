@@ -4,7 +4,7 @@ import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import express from 'express';
 import { getDb } from '../db';
-import { auth } from '../middleware/auth';
+import { auth, getDecodedToken } from '../middleware/auth';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -17,6 +17,7 @@ listingRoutes.get('/', async (req: Request, res: Response) => {
   const listings = await db.listing.findMany({
     include: {
       showtimes: true,
+      venue: true,
     },
   });
   res.json(listings);
@@ -27,14 +28,27 @@ listingRoutes.get('/showtimes', async (req: Request, res: Response) => {
   res.json(showtimes);
 });
 
-listingRoutes.get('/:date', async (req: Request, res: Response) => {
+listingRoutes.get('/date/:date', async (req: Request, res: Response) => {
   const date = req.params.date;
   const time = dayjs(date).toDate();
-  console.log('blank time', time);
   const berlinTime = dayjs(date).format();
   const dateTimeObject = dayjs(berlinTime).toDate();
   console.log(berlinTime, dateTimeObject);
   res.json({ date: berlinTime });
+});
+
+listingRoutes.get('/myListings', auth, async (req: Request, res: Response) => {
+  let Authorization = '';
+  Authorization = req.header('authentication') || '';
+  const rawToken = Authorization.replace('Bearer ', '');
+  const userId = (await getDecodedToken(rawToken)).userId;
+  const listings = await db.listing.findMany({
+    where: { createdById: userId },
+    include: {
+      showtimes: true,
+    },
+  });
+  res.json(listings);
 });
 
 listingRoutes.post('/create/showtime', async (req: Request, res: Response) => {
@@ -70,6 +84,8 @@ listingRoutes.post('/create', async (req: Request, res: Response) => {
     showtimes,
     listingUrl,
     createdById,
+    format,
+    country,
   } = req.body;
   const listing = await db.listing.create({
     data: {
@@ -88,12 +104,14 @@ listingRoutes.post('/create', async (req: Request, res: Response) => {
       showtimes,
       listingUrl,
       createdById,
+      format,
+      country
     },
   });
   res.status(200).json({ data: listing });
 });
 
-listingRoutes.delete('/delete', async (req: Request, res: Response) => {
+listingRoutes.delete('/delete', auth, async (req: Request, res: Response) => {
   const listingId = req.body.listingId;
   if (!listingId) {
     throw new Error('Listing id required.');
@@ -110,8 +128,8 @@ listingRoutes.delete('/delete', async (req: Request, res: Response) => {
       id: listingId
     }
   })
-  return res.status(200).json({ 'good': 'job' });
-})
+  return res.status(200);
+});
 
 listingRoutes.patch('/update/:id', auth, async (req: Request, res: Response) => {
   const listingId = req.params.id;

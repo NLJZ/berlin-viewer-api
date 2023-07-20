@@ -12,11 +12,11 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
     Authorization = req.header('authentication') || '';
     const token = Authorization.replace('Bearer ', '');
     verifiedToken = verify(token, config.JWT_SECRET) as TokenDecoded;
-    console.log('token', verifiedToken);
 
     if (!verifiedToken.userId) {
       userId = undefined;
     } else {
+      userId = verifiedToken.userId;
       return next();
     }
   } catch (e) {
@@ -25,4 +25,10 @@ export async function auth(req: Request, res: Response, next: NextFunction) {
 
   res.status(401);
   return  res.json({authenticated: false})
+}
+
+export async function getDecodedToken(rawToken: string) {
+  const token = rawToken.replace('Bearer ', '');
+  const verifiedToken = verify(token, config.JWT_SECRET) as TokenDecoded;
+  return verifiedToken
 }

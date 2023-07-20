@@ -35,7 +35,9 @@ model Listing {
   id          String      @id @default(cuid())
   type        ListingType
   title       String
+  country     String?
   year        String?
+  format      String?
   runtime     String?
   language    String[]
   subs        String[]
