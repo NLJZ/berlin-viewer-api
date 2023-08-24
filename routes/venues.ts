@@ -35,6 +35,7 @@ venueRoutes.get('/search', async (req: Request, res: Response) => {
     where: {
       name: {
         contains: search,
+        mode: 'insensitive',
       },
     },
   });

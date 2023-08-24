@@ -23,6 +23,17 @@ listingRoutes.get('/', async (req: Request, res: Response) => {
   res.json(listings);
 });
 
+listingRoutes.get('/listing/:listingId', async (req: Request, res: Response) => {
+  const listingId = req.params.listingId;
+  const listing = await db.listing.findUnique({
+    where: {
+      id: listingId
+    }
+  });
+  if (listing) return res.json(listing);
+  return res.send('No listing found')
+})
+
 listingRoutes.get('/showtimes', async (req: Request, res: Response) => {
   const showtimes = await db.showtime.findMany();
   res.json(showtimes);
@@ -112,6 +123,7 @@ listingRoutes.post('/create', async (req: Request, res: Response) => {
 });
 
 listingRoutes.delete('/delete', auth, async (req: Request, res: Response) => {
+  console.log(req.body);
   const listingId = req.body.listingId;
   if (!listingId) {
     throw new Error('Listing id required.');
