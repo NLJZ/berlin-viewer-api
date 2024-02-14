@@ -3,32 +3,42 @@ import { verify } from 'jsonwebtoken';
 import { config } from '../config';
 import { TokenDecoded } from '../types/Auth';
 
-export async function auth(req: Request, res: Response, next: NextFunction) {
-  let userId: string | undefined;
-  let verifiedToken: TokenDecoded;
-
+export function auth(req: Request, res: Response, next: NextFunction) {
   try {
-    let Authorization = '';
-    Authorization = req.header('authentication') || '';
-    const token = Authorization.replace('Bearer ', '');
-    verifiedToken = verify(token, config.JWT_SECRET) as TokenDecoded;
+    const authorization = req.header('authorization') || '';
+    const token = authorization.replace('Bearer ', '');
+    const verifiedToken = verify(token, config.JWT_SECRET) as TokenDecoded;
 
     if (!verifiedToken.userId) {
-      userId = undefined;
+      res.status(401).json({ authenticated: false });
     } else {
-      userId = verifiedToken.userId;
-      return next();
+      next();
     }
-  } catch (e) {
-    userId = undefined;
+  } catch (error) {
+    console.error('Error during token verification:', error);
+    res.status(401).json({ authenticated: false });
   }
-
-  res.status(401);
-  return  res.json({authenticated: false})
 }
 
-export async function getDecodedToken(rawToken: string) {
+export function isAdmin(req: Request, res: Response, next: NextFunction) {
+  try {
+    const authorization = req.header('authorization') || '';
+    const token = authorization.replace('Bearer ', '');
+
+    const verifiedToken = verify(token, config.JWT_SECRET) as TokenDecoded;
+
+    if (verifiedToken.roles && verifiedToken.roles.includes('ADMIN')) {
+      next();
+    } else {
+      return res.status(403).json({ error: 'Access forbidden. Admin privileges required.' });
+    }
+  } catch (error) {
+    console.error('Error during token verification:', error);
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+}
+
+export function getDecodedToken(rawToken: string): TokenDecoded {
   const token = rawToken.replace('Bearer ', '');
-  const verifiedToken = verify(token, config.JWT_SECRET) as TokenDecoded;
-  return verifiedToken
+  return verify(token, config.JWT_SECRET) as TokenDecoded;
 }
